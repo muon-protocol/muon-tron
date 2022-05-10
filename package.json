@@ -1,0 +1,31 @@
+{
+  "name": "muon-tron",
+  "version": "1.0.0",
+  "description": "Muon protocol implementation for Tron blockchain",
+  "main": "./js/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-muon": "env-cmd node ./js/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muon-protocol/muon-tron.git"
+  },
+  "keywords": [
+    "muon",
+    "tron"
+  ],
+  "author": "sadeghte@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/muon-protocol/muon-tron/issues"
+  },
+  "homepage": "https://github.com/muon-protocol/muon-tron#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.0",
+    "env-cmd": "^10.1.0",
+    "tronweb": "^4.1.0",
+    "web3": "^1.7.3"
+  }
+}
