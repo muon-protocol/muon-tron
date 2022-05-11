@@ -1,4 +1,4 @@
-const {soliditySha3, tron: {soliditySha3: tronSha3}} = MuonAppUtils
+const {tron: {soliditySha3}} = MuonAppUtils
 const TssApp = {
   APP_NAME: 'tron-sample',
   APP_ID: '5007',
