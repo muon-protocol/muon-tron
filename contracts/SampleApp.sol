@@ -19,14 +19,12 @@ contract SampleApp is Ownable {
     function verify_string(
         string calldata _str,
         bytes calldata _reqId,
-        uint256[] calldata _sigs,
-        uint256[] calldata _sign_owners,
-        address[] calldata _sign_nonces
+        bytes[] calldata _sigs
     ) public returns (bool) {
 
         bytes32 hash = keccak256(abi.encodePacked(APP_ID, _str));
 
-        require(muon.verify(_reqId, uint256(hash), _sigs, _sign_owners, _sign_nonces), '!verified');
+        require(muon.verify(_reqId, uint256(hash), decodeSigs(_sigs)), '!verified');
 
         emit VerifyString(_str);
 
@@ -37,14 +35,12 @@ contract SampleApp is Ownable {
         string calldata _str,
         uint256 _num,
         bytes calldata _reqId,
-        uint256[] calldata _sigs,
-        uint256[] calldata _sign_owners,
-        address[] calldata _sign_nonces
+        bytes[] calldata _sigs
     ) public returns (bool) {
 
         bytes32 hash = keccak256(abi.encodePacked(APP_ID, _str, _num));
 
-        require(muon.verify(_reqId, uint256(hash), _sigs, _sign_owners, _sign_nonces), '!verified');
+        require(muon.verify(_reqId, uint256(hash), decodeSigs(_sigs)), '!verified');
 
         emit VerifyStringInt(_str, _num);
 
@@ -52,18 +48,16 @@ contract SampleApp is Ownable {
     }
 
     function verify_string_int_address(
-        bytes calldata params,
+        string calldata _str,
+        uint256 _int,
+        address _addr,
         bytes calldata _reqId,
-        uint256[] calldata _sigs,
-        uint256[] calldata _sign_owners,
-        address[] calldata _sign_nonces
+        bytes[] calldata _sigs
     ) public returns (bool) {
-
-        (string memory _str, uint256 _int, address _addr) = abi.decode(params, (string, uint256, address));
 
         bytes32 hash = keccak256(abi.encodePacked(APP_ID, _str, _int, _addr));
 
-        require(muon.verify(_reqId, uint256(hash), _sigs, _sign_owners, _sign_nonces), '!verified');
+        require(muon.verify(_reqId, uint256(hash), decodeSigs(_sigs)), '!verified');
 
         emit VerifyStringIntAddress(_str, _int, _addr);
 
@@ -76,5 +70,14 @@ contract SampleApp is Ownable {
 
     function setMuonAddress(address _muon) public onlyOwner {
         muon = IMuonV02(_muon);
+    }
+
+    function decodeSigs(bytes[] calldata _sigs) internal pure returns (IMuonV02.SchnorrSign[] memory) {
+        IMuonV02.SchnorrSign[] memory sigs = new IMuonV02.SchnorrSign[](_sigs.length);
+        for(uint i=0 ; i<_sigs.length ; i++) {
+            (uint256 signature, address owner, address nonce) = abi.decode(_sigs[i], (uint256, address, address));
+            sigs[i] = IMuonV02.SchnorrSign(signature, owner, nonce);
+        }
+        return sigs;
     }
 }

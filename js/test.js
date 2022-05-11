@@ -1,9 +1,10 @@
-const { tronWeb, encodeParams } = require('./utils/tronweb');
+const { tronWeb, encodeSignature, toEthAddress } = require('./utils/tron');
 const { callMuon } = require('./utils/muon')
 
 const CONTRACT_ADDRESS = process.env.SAMPLE_CONTRACT_ADDRESS
 
 async function testVerifyString(str) {
+  console.log(`calling muon ...`)
   let muonResponse = await callMuon({
     app: "tron-sample",
     method: "verify_string",
@@ -22,23 +23,21 @@ async function testVerifyString(str) {
   console.log({result, nonceAddress, owner, signature, cid})
 
   let contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  console.log(`calling sample smart contract ...`)
   let contractCallResult = await contract.verify_string(
     // _str
     result,
     // msg hash
     "0x" + cid.substr(1),
     // signatures
-    [signature],
-    // owners
-    [owner],
-    // nonces
-    [nonceAddress]
+    [encodeSignature(signature, owner, nonceAddress)]
   )
     .send({shouldPollResponse:true});
   console.dir(contractCallResult, {depth: null})
 }
 
 async function testVerifyStringInt(str, int) {
+  console.log(`calling muon ...`)
   let muonResponse = await callMuon({
     app: "tron-sample",
     method: "verify_string_int",
@@ -57,6 +56,7 @@ async function testVerifyStringInt(str, int) {
   console.log({result, nonceAddress, owner, signature, cid})
 
   let contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  console.log(`calling sample smart contract ...`)
   let contractCallResult = await contract.verify_string_int(
     // _str
     result.str,
@@ -64,17 +64,14 @@ async function testVerifyStringInt(str, int) {
     // msg hash
     "0x" + cid.substr(1),
     // signatures
-    [signature],
-    // owners
-    [owner],
-    // nonces
-    [nonceAddress]
+    [encodeSignature(signature, owner, nonceAddress)]
   )
     .send({shouldPollResponse:true});
   console.dir(contractCallResult, {depth: null})
 }
 
 async function testVerifyStringIntAddress(str, int, address) {
+  console.log(`calling muon ...`)
   let muonResponse = await callMuon({
     app: "tron-sample",
     method: "verify_string_int_address",
@@ -90,29 +87,22 @@ async function testVerifyStringIntAddress(str, int, address) {
     }
   } = muonResponse
 
-  let params = "0x" + await encodeParams([
-    {type: "string", value: str},
-    {type: "uint256", value: int},
-    {type: "address", value: address},
-  ])
 
   console.log({
-    result, nonceAddress, owner, signature, cid,
-    packedParams: params
+    result, nonceAddress, owner, signature, cid
   })
 
   let contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  console.log(`calling sample smart contract ...`)
   let contractCallResult = await contract.verify_string_int_address(
     // packed params
-    params,
+    str,
+    int,
+    address,
     // msg hash
     "0x" + cid.substr(1),
     // signatures
-    [signature],
-    // owners
-    [owner],
-    // nonces
-    [nonceAddress]
+    [encodeSignature(signature, owner, nonceAddress)]
   )
     .send({shouldPollResponse:true});
   console.dir(contractCallResult, {depth: null})
@@ -120,13 +110,32 @@ async function testVerifyStringIntAddress(str, int, address) {
 
 async function test() {
   console.log(`test scenario 1`)
-  await testVerifyString("sample-string-1")
+  try {
+    await testVerifyString("sample-string-1")
+  }catch (e) {
+    console.error(e)
+  }
 
   console.log(`test scenario 2`)
-  await testVerifyStringInt("sample-string-2", "0x41")
+  try {
+    await testVerifyStringInt("sample-string-2", "0x41")
+  }catch (e) {
+    console.error(e)
+  }
 
   console.log(`test scenario 3`)
-  await testVerifyStringIntAddress("sample-string-3", "0x42", "0x829bd824b016326a401d083b33d092293333a830")
+  try {
+    await testVerifyStringIntAddress("sample-string-3", "0x42", process.env.SAMPLE_CONTRACT_ADDRESS)
+  }catch (e) {
+    console.error(e)
+  }
+
+  console.log(`test scenario 4`)
+  try {
+    await testVerifyStringIntAddress("sample-string-4", "0x42", toEthAddress(process.env.SAMPLE_CONTRACT_ADDRESS))
+  }catch (e) {
+    console.error(e)
+  }
 }
 
 test();

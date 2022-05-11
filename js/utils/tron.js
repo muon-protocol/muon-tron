@@ -1,13 +1,13 @@
 //It is recommended to use ethers4.0.47 version
 var ethers = require('ethers')
-const TronWeb = require('tronweb')
+const Tron = require('tronweb')
 const Web3 = require('web3');
 
 const AbiCoder = ethers.utils.AbiCoder;
 const ADDRESS_PREFIX_REGEX = /^(41)/;
 const ADDRESS_PREFIX = "41";
 
-async function encodeParams(inputs){
+function encodeParams(inputs){
   let typesValues = inputs
   let parameters = ''
 
@@ -27,7 +27,7 @@ async function encodeParams(inputs){
     values.push(value);
   }
 
-  console.log(types, values)
+  // console.log(types, values)
   try {
     parameters = abiCoder.encode(types, values).replace(/^(0x)/, '');
   } catch (ex) {
@@ -67,7 +67,34 @@ async function decodeParams(types, output, ignoreMethodHash) {
   }, []);
 }
 
-const tronWeb = new TronWeb({
+function encodeSignature(signature, owner, nonce) {
+  return "0x" + encodeParams([
+    {type: "uint256", value: signature},
+    {type: "uint256", value: owner},
+    {type: "address", value: nonce},
+  ])
+}
+
+function toEthAddress(address) {
+  if(!Tron.utils.crypto.isAddressValid(address))
+    throw {message: `Invalid tron address ${address}`}
+  if(!Tron.utils.isHex(address))
+    return Web3.utils.toChecksumAddress("0x" + Tron.address.toHex(address).substr(2, 40));
+  else
+    return address;
+}
+
+function soliditySha3(inputs) {
+  inputs = inputs.map(({type, value}) => {
+    if(type === 'address')
+      return {type, value: toEthAddress(value)}
+    else
+      return {type, value}
+  })
+  return Web3.utils.soliditySha3(...inputs)
+}
+
+const tronWeb = new Tron({
   fullHost: process.env.TRONWEB_PROVIDER,
   headers: { "TRON-PRO-API-KEY": process.env.TRON_PRO_API_KEY },
   privateKey: process.env.TRON_WALLET_PRIVATE_KEY
@@ -75,7 +102,9 @@ const tronWeb = new TronWeb({
 
 module.exports = {
   tronWeb,
-  soliditySha3: Web3.utils.soliditySha3,
+  toEthAddress,
+  soliditySha3,
   encodeParams,
   decodeParams,
+  encodeSignature,
 };

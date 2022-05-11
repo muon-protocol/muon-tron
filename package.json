@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Muon protocol implementation for Tron blockchain",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test-muon": "env-cmd node ./js/test-muon.js",
-    "test-sample-app": "env-cmd node ./js/test-sample-app.js"
+    "test": "env-cmd node ./js/test.js"
   },
   "repository": {
     "type": "git",

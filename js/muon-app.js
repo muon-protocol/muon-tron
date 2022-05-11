@@ -1,8 +1,7 @@
-const {soliditySha3, Web3} = MuonAppUtils
+const {soliditySha3, tron: {soliditySha3: tronSha3}} = MuonAppUtils
 const TssApp = {
   APP_NAME: 'tron-sample',
-  APP_ID: 5007,
-  useTss: true,
+  APP_ID: '5007',
 
   onRequest: async function (request) {
     let {method, data: {params={}}} = request;
@@ -45,7 +44,15 @@ const TssApp = {
           {type: 'uint256', value: result.int},
         ]);
       case 'verify_string_int_address':
-        return soliditySha3([
+        console.log([
+          tronSha3([
+            {type: 'uint32', value: this.APP_ID},
+            {type: 'string', value: result.str},
+            {type: 'uint256', value: result.int},
+            {type: 'address', value: result.address},
+          ]),
+        ])
+        return tronSha3([
           {type: 'uint32', value: this.APP_ID},
           {type: 'string', value: result.str},
           {type: 'uint256', value: result.int},
